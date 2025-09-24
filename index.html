@@ -206,7 +206,6 @@
             <table id="carTable">
                 <thead>
                     <tr>
-                        <th>No</th>
                         <th>차량번호</th>
                         <th>차종</th>
                         <th>소유주</th>
@@ -243,7 +242,7 @@
             } catch (error) {
                 console.error('데이터를 가져오는 중 오류 발생:', error);
                 const tableBody = document.getElementById('tableBody');
-                tableBody.innerHTML = `<tr><td colspan="5" class="no-results">데이터 로딩에 실패했습니다. 시트가 공개 상태인지 확인해주세요.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="4" class="no-results">데이터 로딩에 실패했습니다. 시트가 공개 상태인지 확인해주세요.</td></tr>`;
                 tableContainer.style.display = 'block'; // 오류 발생 시에는 메시지를 보여주기 위해 테이블 표시
             } finally {
                 loader.style.display = 'none'; // 로딩 완료 후 스피너 숨기기
@@ -278,17 +277,16 @@
             tableBody.innerHTML = ''; // 기존 내용을 초기화
 
             if (data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="no-results">검색 결과가 없습니다.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="4" class="no-results">검색 결과가 없습니다.</td></tr>`;
                 return;
             }
 
-            data.forEach((row, index) => {
+            data.forEach((row) => {
                 const tr = document.createElement('tr');
                 // 시트의 '앞자리', '문자', '뒷자리'를 조합하여 차량번호 생성
                 const fullCarNumber = `${row['앞자리'] || ''} ${row['문자'] || ''} ${row['뒷자리'] || ''}`.trim();
 
                 tr.innerHTML = `
-                    <td>${index + 1}</td>
                     <td>${fullCarNumber}</td>
                     <td>${row['차종'] || ''}</td>
                     <td>${row['이름'] || ''}</td>
