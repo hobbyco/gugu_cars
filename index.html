@@ -69,12 +69,10 @@
             display: flex;
             gap: 10px;
             margin-bottom: 25px;
-            /* justify-content: center; 원복 */
         }
 
         #searchInput {
-            flex-grow: 1; /* 자동 길이 조절 활성화로 원복 */
-            /* width: 180px; 삭제 */
+            flex-grow: 1;
             padding: 12px 15px 12px 45px;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
@@ -198,8 +196,7 @@
         <a href="https://docs.google.com/spreadsheets/d/1QmB5cBDpgl1rVPvb-owGJP1NI4Ypwnlp9Gw9jyNrZAY/edit" target="_blank" class="sheet-link" title="Google Sheet 바로가기">+</a>
         <h1>🐾 불독스 차량 조회 🐾</h1>
         <div class="search-box">
-            <!-- 모바일 숫자 키패드를 위한 type="text", inputmode="numeric" 추가 -->
-            <input type="text" id="searchInput" placeholder="차량번호, 소유주 등" inputmode="numeric">
+            <input type="text" id="searchInput" placeholder="차량번호, 소유주 등">
             <button id="searchButton">검색</button>
         </div>
 
