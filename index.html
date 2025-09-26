@@ -65,46 +65,89 @@
             font-size: 28px;
         }
 
-        .search-box {
+        .search-container {
             display: flex;
             gap: 10px;
             margin-bottom: 25px;
+            align-items: stretch;
         }
 
-        #searchInput {
+        .input-wrapper {
             flex-grow: 1;
-            padding: 12px 15px 12px 45px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .button-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-box {
+            flex-grow: 1;
+            display: flex;
+        }
+
+        .search-box input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 15px;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s, box-shadow 0.3s;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23a0aec0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: 15px center;
         }
 
-        #searchInput:focus {
+        .search-box input:focus {
             outline: none;
             border-color: #3182ce;
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
         }
 
-        #searchButton {
-            padding: 12px 20px;
+        #carNumberSearchInput::-webkit-outer-spin-button,
+        #carNumberSearchInput::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        #carNumberSearchInput {
+            -moz-appearance: textfield;
+        }
+
+
+        #searchButton, #resetButton {
+            padding: 0 20px;
             border: none;
-            background: linear-gradient(45deg, #3182ce, #63b3ed);
-            color: white;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
+            flex-grow: 1;
+            white-space: nowrap;
+        }
+
+        #searchButton {
+            background: linear-gradient(45deg, #3182ce, #63b3ed);
+            color: white;
         }
 
         #searchButton:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(49, 130, 206, 0.4);
         }
+
+        #resetButton {
+            background-color: #f8f9fa;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        #resetButton:hover {
+            background-color: #e9ecef;
+        }
+
 
         /* 로딩 스피너 스타일 */
         #loader {
@@ -123,7 +166,7 @@
         }
 
         .table-container {
-            overflow-x: auto; /* 모바일에서 가로 스크롤 가능하게 */
+            overflow-x: auto;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             margin-top: 25px;
@@ -184,8 +227,8 @@
                 font-size: 32px; /* PC에서는 제목을 더 크게 */
             }
 
-            #searchInput {
-                font-size: 17px; /* PC에서는 검색창 폰트를 약간 크게 */
+            .search-box input {
+                font-size: 17px; 
             }
         }
     </style>
@@ -195,9 +238,19 @@
     <div class="container">
         <a href="https://docs.google.com/spreadsheets/d/1QmB5cBDpgl1rVPvb-owGJP1NI4Ypwnlp9Gw9jyNrZAY/edit" target="_blank" class="sheet-link" title="Google Sheet 바로가기">+</a>
         <h1>🐾 불독스 차량 조회 🐾</h1>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="차량번호, 소유주 등">
-            <button id="searchButton">검색</button>
+        <div class="search-container">
+            <div class="input-wrapper">
+                <div class="search-box">
+                    <input type="number" id="carNumberSearchInput" placeholder="차량번호 검색 (숫자만)">
+                </div>
+                <div class="search-box">
+                    <input type="text" id="generalSearchInput" placeholder="차종, 소유주 등 전체 검색">
+                </div>
+            </div>
+            <div class="button-wrapper">
+                <button id="searchButton">검색</button>
+                <button id="resetButton" type="button">초기화</button>
+            </div>
         </div>
 
         <div id="loader"></div> <!-- 로딩 스피너 -->
@@ -238,27 +291,22 @@
                 }
                 const csvText = await response.text();
                 carData = parseCSV(csvText);
-                // 초기 데이터 렌더링 제거. 검색 시에만 렌더링.
             } catch (error) {
                 console.error('데이터를 가져오는 중 오류 발생:', error);
                 const tableBody = document.getElementById('tableBody');
                 tableBody.innerHTML = `<tr><td colspan="4" class="no-results">데이터 로딩에 실패했습니다. 시트가 공개 상태인지 확인해주세요.</td></tr>`;
-                tableContainer.style.display = 'block'; // 오류 발생 시에는 메시지를 보여주기 위해 테이블 표시
+                tableContainer.style.display = 'block';
             } finally {
-                loader.style.display = 'none'; // 로딩 완료 후 스피너 숨기기
+                loader.style.display = 'none';
             }
         });
 
-        // CSV 텍스트를 객체 배열로 파싱하는 함수 (BOM 문제 해결)
         function parseCSV(text) {
             const lines = text.trim().split(/\r\n|\n/);
-            // 첫 줄의 맨 앞에 있을 수 있는 BOM(Byte Order Mark) 문자를 제거하고 헤더를 분리합니다.
             const headers = lines[0].replace(/^\uFEFF/, '').split(',');
             const data = [];
             for (let i = 1; i < lines.length; i++) {
-                // 빈 줄은 건너뜁니다.
                 if (lines[i].trim() === '') continue;
-
                 const values = lines[i].split(',');
                 const entry = {};
                 for (let j = 0; j < headers.length; j++) {
@@ -271,10 +319,9 @@
             return data;
         }
 
-        // 데이터를 테이블에 렌더링하는 함수
         function renderTable(data) {
             const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = ''; // 기존 내용을 초기화
+            tableBody.innerHTML = '';
 
             if (data.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="4" class="no-results">검색 결과가 없습니다.</td></tr>`;
@@ -283,7 +330,6 @@
 
             data.forEach((row) => {
                 const tr = document.createElement('tr');
-                // 시트의 '앞자리', '문자', '뒷자리'를 조합하여 차량번호 생성
                 const fullCarNumber = `${row['앞자리'] || ''} ${row['문자'] || ''} ${row['뒷자리'] || ''}`.trim();
 
                 tr.innerHTML = `
@@ -296,43 +342,56 @@
             });
         }
         
-        // 검색을 처리하는 함수
         function handleSearch() {
             const tableContainer = document.querySelector('.table-container');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const carNumberTerm = document.getElementById('carNumberSearchInput').value.trim();
+            const generalTerm = document.getElementById('generalSearchInput').value.toLowerCase().trim();
             
-            tableContainer.style.display = 'block'; // 검색을 실행하면 항상 테이블 컨테이너를 보여줌
+            tableContainer.style.display = 'block';
 
-            if (!searchTerm) {
-                renderTable(carData); // 검색어가 없으면 전체 데이터 표시
+            if (!carNumberTerm && !generalTerm) {
+                renderTable(carData);
                 return;
             }
 
             const filteredData = carData.filter(row => {
-                const fullCarNumber = `${row['앞자리'] || ''} ${row['문자'] || ''} ${row['뒷자리'] || ''}`.trim();
-                
-                // 검색 대상이 될 문자열들을 하나로 합칩니다.
+                const carNumberDigits = (row['앞자리'] || '') + (row['뒷자리'] || '');
+                const carNumberMatch = carNumberTerm ? carNumberDigits.includes(carNumberTerm) : true;
+
+                const fullCarNumberWithSpaces = `${row['앞자리'] || ''} ${row['문자'] || ''} ${row['뒷자리'] || ''}`.trim();
                 const searchableString = [
-                    fullCarNumber,
+                    fullCarNumberWithSpaces,
                     row['차종'],
                     row['이름'],
                     row['비고']
                 ].join(' ').toLowerCase();
+                const generalMatch = generalTerm ? searchableString.includes(generalTerm) : true;
 
-                return searchableString.includes(searchTerm);
+                return carNumberMatch && generalMatch;
             });
 
             renderTable(filteredData);
         }
 
-        // 검색 버튼 클릭 이벤트 리스너
-        document.getElementById('searchButton').addEventListener('click', handleSearch);
+        function handleReset() {
+            document.getElementById('carNumberSearchInput').value = '';
+            document.getElementById('generalSearchInput').value = '';
+            
+            const tableContainer = document.querySelector('.table-container');
+            const tableBody = document.getElementById('tableBody');
+            
+            tableContainer.style.display = 'none';
+            tableBody.innerHTML = '';
+        }
 
-        // 검색창에서 Enter 키 입력 시 검색 실행
-        document.getElementById('searchInput').addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') {
-                handleSearch();
-            }
+        document.getElementById('searchButton').addEventListener('click', handleSearch);
+        document.getElementById('resetButton').addEventListener('click', handleReset);
+
+        document.getElementById('carNumberSearchInput').addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') handleSearch();
+        });
+        document.getElementById('generalSearchInput').addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') handleSearch();
         });
 
     </script>
